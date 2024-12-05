@@ -15,7 +15,7 @@
 
 <number> ::= <digit> | <number> <digit> | <number> <dot> <number>
 
-<comparable> ::= <identifier> | <bool_literal> | <number> | <edge_weight_value>
+<comparable> ::= <identifier> | <bool_literal> | <number> | <number_value>
 <comparison> ::= <comparable> "EQ" <comparable>
                | <comparable> "NEQ" <comparable>
                | <comparable> "LT" <comparable>
@@ -29,13 +29,19 @@
 <program> ::= <statement> | <statement> <program>
 <statement> ::= <graph_creation> | <node_op> | <edge_op> | <control_flow>
 
-<graph_operation> ::= "GRAPH" <identifier> | "DIGRAPH" <identifier> | "RM GRAPH" <identifier>
+<graph_operation> ::= "GRAPH" <identifier>
+                    | "DIGRAPH" <identifier>
+                    | "RM GRAPH" <identifier>
 
-<node_operation> ::= "ADD NODE" <string> <identifier> | "RM NODE" <string> <identifier>
+<node_operation> ::= "ADD NODE" <string> <identifier>
+                   | "RM NODE" <string> <identifier>
 
-<edge_operation> ::= "ADD EDGE" <string> <string> <identifier> | "RM EDGE" <string> <string> <identifier>
-<edge_weight_operation> ::= "SET WEIGHT" <string> <string> <number> <identifier>
-<edge_weight_value> ::= "GET WEIGHT" <string> <string> <identifier>
+<edge_operation> ::= "ADD EDGE" <string> <string> <identifier>
+                   | "RM EDGE" <string> <string> <identifier>
+                   | "SET WEIGHT" <string> <string> <number> <identifier>
+
+<number_value> ::= "GET WEIGHT" <string> <string> <identifier>
+                 | "DISTANCE" <string> <string> <identifier>
 
 <single_iterator> ::= "NODES" <identifier>
                     | "TOPOLOGICAL SORT" <identifier>
