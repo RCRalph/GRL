@@ -61,7 +61,7 @@
              | "FOR" <identifier> "," <identifier> "OF" <double_iterator> "{" <program> "}"
              | "FOR" <identifier> "," <identifier> "," <identifier> "OF" <triple_iterator> "{" <program> "}"
 
-<control_flow> ::= <if_statement> | <elseif_statement> | <else_statement> | <for_loop>
+<control_flow> ::= <if_statement> | <for_loop>
 
 <print> ::= "PRINT" <comparable>
 <export> ::= "EXPORT" <identifier> <string>
