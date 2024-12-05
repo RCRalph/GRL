@@ -26,9 +26,6 @@
 <includes_check> ::= "HAS NODE" <string> <identifier> | "HAS EDGE" <string> <identifier>
 <bool_expr> ::= <bool_literal> | <comparison> | <includes_check>
 
-<program> ::= <statement> | <statement> <program>
-<statement> ::= <graph_creation> | <node_op> | <edge_op> | <control_flow>
-
 <graph_operation> ::= "GRAPH" <identifier>
                     | "DIGRAPH" <identifier>
                     | "RM GRAPH" <identifier>
@@ -54,7 +51,10 @@
 <triple_iterator> ::= "DISTANCE MATRIX" <identifier>
 
 <if_statement> ::= "IF" "(" <bool_expr> ")" "{" <program> "}"
-<elseif_statement> ::= "ELSEIF" "(" <bool_expr> ")" "{" <program> "}" | <elseif_statement>
+                 | "IF" "(" <bool_expr> ")" "{" <program> "}" <elseif_statement>
+                 | "IF" "(" <bool_expr> ")" "{" <program> "}" <else_statement>
+
+<elseif_statement> ::= "ELSEIF" "(" <bool_expr> ")" "{" <program> "}" | <elseif_statement> <elseif_statement> | <elseif_statement> <else_statement>
 <else_statement> ::= "ELSE" "{" <program> "}"
 
 <for_loop> ::= "FOR" <identifier> "OF" <single_iterator> "{" <program> "}"
