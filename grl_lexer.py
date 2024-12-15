@@ -6,35 +6,28 @@ class GRLLexer(Lexer):
     keywords = {
         ADD, RM, GET, SET, # type: ignore
         GRAPH, DIGRAPH, NODE, EDGE, WEIGHT, # type: ignore
-        DISTANCE_BETWEEN, DISTANCE_FROM, DISTANCE_MATRIX, # type: ignore
+        DISTANCE, DISTANCE_TYPE, # type: ignore
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
-        PRINT, EXPORT, IMPORT # type: ignore
-    }
-
-    literals = {
-        TRUE, FALSE, # type: ignore
+        PRINT, EXPORT, IMPORT, # type: ignore
+        FOR, COMMA, OF, IF, ELSEIF, ELSE, # type: ignore
     }
 
     tokens = {
-        *keywords, *literals,
+        *keywords,
+        BOOLEAN, # type: ignore
         ID, STRING, NUMBER, # type: ignore
-        EQ, NEQ, LT, LEQ, GT, GEQ, # type: ignore
+        COMPARATOR, # type: ignore
+        LEFT_PARENT, RIGHT_PARENT, # type: ignore
+        LEFT_CURLY, RIGHT_CURLY, # type: ignore
     }
 
-    TRUE = r"TRUE"
-    FALSE = r"FALSE"
+    BOOLEAN = r"(TRUE|FALSE)"
     STRING = r'"(?:[^"\\]|\\.)*"'
     NUMBER = r"(\d+|\d+\.\d*)"
 
-    EQ = r"=="
-    NEQ = r"!="
-    LEQ = r"<="
-    LT = r"<"
-    GEQ = r">="
-    GT = r">"
+    COMPARATOR = r"(==|!=|<=|<|>=|>)"
 
-    GRAPH = r"GRAPH"
-    DIGRAPH = r"DIGRAPH"
+    GRAPH = r"(DI)?GRAPH"
     NODE = r"NODE"
     EDGE = r"EDGE"
     WEIGHT = r"WEIGHT"
@@ -44,9 +37,8 @@ class GRLLexer(Lexer):
     GET = r"GET"
     SET = r"SET"
 
-    DISTANCE_BETWEEN = r"DISTANCE BETWEEN"
-    DISTANCE_FROM = r"DISTANCE FROM"
-    DISTANCE_MATRIX = r"DISTANCE MATRIX"
+    DISTANCE = r"DISTANCE"
+    DISTANCE_TYPE = r"(BETWEEN|FROM|MATRIX)"
 
     NODES = r"NODES"
     EDGES = r"EDGES"
