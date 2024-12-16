@@ -5,7 +5,7 @@ class GRLLexer(Lexer):
 
     keywords = {
         ADD, RM, GET, SET, # type: ignore
-        GRAPH, DIGRAPH, NODE, EDGE, WEIGHT, # type: ignore
+        GRAPH, NODE, EDGE, WEIGHT, # type: ignore
         DISTANCE, DISTANCE_TYPE, # type: ignore
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
         PRINT, EXPORT, IMPORT, # type: ignore
@@ -14,11 +14,11 @@ class GRLLexer(Lexer):
 
     tokens = {
         *keywords,
-        BOOLEAN, # type: ignore
-        ID, STRING, NUMBER, # type: ignore
-        COMPARATOR, # type: ignore
+        BOOLEAN, STRING, NUMBER, # type: ignore
+        COMPARATOR, HAS, # type: ignore
         LEFT_PARENT, RIGHT_PARENT, # type: ignore
         LEFT_CURLY, RIGHT_CURLY, # type: ignore
+        ID, # type: ignore
     }
 
     BOOLEAN = r"(TRUE|FALSE)"
@@ -26,6 +26,7 @@ class GRLLexer(Lexer):
     NUMBER = r"(\d+|\d+\.\d*)"
 
     COMPARATOR = r"(==|!=|<=|<|>=|>)"
+    HAS = r"HAS"
 
     GRAPH = r"(DI)?GRAPH"
     NODE = r"NODE"
