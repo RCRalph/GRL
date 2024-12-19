@@ -8,7 +8,8 @@ class GRLParser(Parser):
     tokens = GRLLexer.tokens
 
     precedence = [
-        ("nonassoc", "COMPARATOR")
+        ("nonassoc", "COMPARATOR"),
+        ('right', 'PRINT'),
     ]
 
     def __init__(self):
