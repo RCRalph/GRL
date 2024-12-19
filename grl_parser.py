@@ -1,10 +1,15 @@
 import networkx as nx
+import matplotlib.pyplot as plt
 from sly import Parser
 
 from grl_lexer import GRLLexer
 
 class GRLParser(Parser):
     tokens = GRLLexer.tokens
+
+    precedence = [
+        ("nonassoc", "COMPARATOR")
+    ]
 
     def __init__(self):
         self.graphs: dict[str, nx.Graph] = {}
@@ -16,6 +21,34 @@ class GRLParser(Parser):
         return self.graphs[graph_id]
 
     # ----- STATEMENTS -----
+
+    @_("EXIT") # type: ignore
+    def statement(self, production):
+        exit(0)
+
+    @_("PRINT boolean") # type: ignore
+    def statement(self, production):
+        print(production.boolean)
+
+    @_("PRINT number") # type: ignore
+    def statement(self, production):
+        print(production.number)
+
+    @_("PRINT string") # type: ignore
+    def statement(self, production):
+        print(production.string)
+
+    @_("PRINT ID") # type: ignore
+    def statement(self, production):
+        graph = self._get_graph(production.ID)
+        pos = nx.nx_agraph.graphviz_layout(graph)
+        weights = nx.get_edge_attributes(graph, 'weight')
+
+        nx.draw(graph, pos, with_labels=True)
+        if any(item != 1 for item in weights):
+            nx.draw_networkx_edge_labels(graph, pos, edge_labels=weights)
+
+        plt.show()
 
     @_("ADD entity ID") # type: ignore
     def statement(self, production):
@@ -47,13 +80,13 @@ class GRLParser(Parser):
             case (start, end):
                 graph.remove_edge(start, end)
 
-    @_("SET WEIGHT string string number ID") # type: ignore
+    @_("SET WEIGHT OF edge number ID") # type: ignore
     def statement(self, production):
         graph = self._get_graph(production.ID)
-        if (production.string0, production.string1) not in graph.edges:
-            raise ValueError(f"Edge {(production.string0, production.string1)} not in graph {production.ID}")
+        if production.edge not in graph.edges:
+            raise ValueError(f"Edge {production.edge} not in graph {production.ID}")
 
-        graph[production.string0][production.string1]["weight"] = production.number
+        graph.edges[production.edge]["weight"] = production.number
 
     # ----- ENTITIES -----
 
@@ -76,6 +109,10 @@ class GRLParser(Parser):
         return production.edge
 
     # ----- GRAPH PROPERTIES -----
+
+    @_("EXISTS ID") # type: ignore
+    def boolean(self, production) -> bool:
+        return production.ID in self.graphs
 
     @_("HAS node ID") # type: ignore
     def boolean(self, production) -> bool:
@@ -114,18 +151,15 @@ class GRLParser(Parser):
                 return production.comparable0 > production.comparable1
 
     @_("ID") # type: ignore
-    def comparable(self, production) -> bool:
-        if production.ID not in self.graphs:
-            raise ValueError(f"Graph {production.ID} doesn't exist")
-
-        return self.graphs[production.ID]
+    def comparable(self, production) -> nx.Graph:
+        return self._get_graph(production.ID)
 
     @_("boolean") # type: ignore
     def comparable(self, production) -> bool:
         return production.boolean
 
     @_("number") # type: ignore
-    def comparable(self, production) -> bool:
+    def comparable(self, production) -> int | float:
         return production.number
 
     # ----- LITERALS -----

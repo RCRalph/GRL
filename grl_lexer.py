@@ -8,17 +8,18 @@ class GRLLexer(Lexer):
         GRAPH, NODE, EDGE, WEIGHT, # type: ignore
         DISTANCE, DISTANCE_TYPE, # type: ignore
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
-        PRINT, EXPORT, IMPORT, # type: ignore
+        PRINT, EXPORT, IMPORT, EXIT, # type: ignore
         FOR, COMMA, OF, IF, ELSEIF, ELSE, # type: ignore
     }
 
     tokens = {
         *keywords,
         BOOLEAN, STRING, NUMBER, # type: ignore
-        COMPARATOR, HAS, # type: ignore
+        COMPARATOR, HAS, EXISTS, # type: ignore
+        LINE_SEPARATOR, # type: ignore
         LEFT_PARENT, RIGHT_PARENT, # type: ignore
         LEFT_CURLY, RIGHT_CURLY, # type: ignore
-        ID, # type: ignore
+        ID, ANY, # type: ignore
     }
 
     BOOLEAN = r"(TRUE|FALSE)"
@@ -27,6 +28,7 @@ class GRLLexer(Lexer):
 
     COMPARATOR = r"(==|!=|<=|<|>=|>)"
     HAS = r"HAS"
+    EXISTS = r"EXISTS"
 
     GRAPH = r"(DI)?GRAPH"
     NODE = r"NODE"
@@ -48,7 +50,6 @@ class GRLLexer(Lexer):
     NEIGHBORS = r"NEIGHBORS"
 
     FOR = r"FOR"
-    COMMA = r","
     OF = r"OF"
     IF = r"IF"
     ELSEIF = r"ELSEIF"
@@ -58,9 +59,14 @@ class GRLLexer(Lexer):
     RIGHT_PARENT = r"\)"
     LEFT_CURLY = r"{"
     RIGHT_CURLY = r"}"
+    LINE_SEPARATOR = r"[;\n]"
+    COMMA = r","
 
     PRINT = r"PRINT"
     EXPORT = r"EXPORT"
     IMPORT = r"IMPORT"
+    EXIT = r"EXIT"
 
     ID = r"[_a-z][_a-z0-9]*"
+
+    ANY = r".+"

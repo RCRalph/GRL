@@ -1,0 +1,15 @@
+ADD DIGRAPH my_graph
+ADD NODE "0" my_graph
+ADD EDGE "1" "2" my_graph
+SET WEIGHT OF EDGE "1" "2" 10 my_graph
+
+PRINT EXISTS my_graph
+PRINT my_graph
+PRINT GET WEIGHT OF EDGE "1" "2" my_graph
+PRINT HAS EDGE "2" "1" my_graph
+
+RM NODE "1" my_graph
+PRINT HAS EDGE "1" "2" my_graph
+
+RM GRAPH my_graph
+PRINT EXISTS my_graph
