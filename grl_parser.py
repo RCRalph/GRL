@@ -33,6 +33,13 @@ class GRLParser(Parser):
 
         raise TypeError(f"Variable {graph_id} is not a graph")
 
+    @staticmethod
+    def _graph_has_negative_weights(graph: nx.Graph):
+        return any(
+            graph.get_edge_data(u, v).get("weight", 1) < 0
+            for u, v in graph.edges
+        )
+
     @_("statement_sequence") # type: ignore
     def program(self, production):
         statement_sequence: list[ParseTreeNode[None]] = production.statement_sequence
@@ -54,6 +61,55 @@ class GRLParser(Parser):
         return ParseTreeNode(
             evaluator,
             production.ID, production.single_iterator, production.statement_sequence
+        )
+
+    @_("FOR ID COMMA ID OF double_iterator LEFT_CURLY statement_sequence RIGHT_CURLY") # type: ignore
+    def statement(self, production):
+        def evaluator(
+            first_iterator_id: str,
+            second_iterator_id: str,
+            double_iterator: list[Any],
+            statement_sequence: list[ParseTreeNode[None]]
+        ):
+            for item1, item2 in double_iterator:
+                self.variables[first_iterator_id] = item1
+                self.variables[second_iterator_id] = item2
+                for statement in statement_sequence:
+                    statement.evaluate()
+
+            del self.variables[first_iterator_id]
+            del self.variables[second_iterator_id]
+
+        return ParseTreeNode(
+            evaluator,
+            production.ID0, production.ID1,
+            production.double_iterator, production.statement_sequence
+        )
+
+    @_("FOR ID COMMA ID COMMA ID OF triple_iterator LEFT_CURLY statement_sequence RIGHT_CURLY") # type: ignore
+    def statement(self, production):
+        def evaluator(
+            first_iterator_id: str,
+            second_iterator_id: str,
+            third_iterator_id: str,
+            triple_iterator: list[Any],
+            statement_sequence: list[ParseTreeNode[None]]
+        ):
+            for item1, item2, item3 in triple_iterator:
+                self.variables[first_iterator_id] = item1
+                self.variables[second_iterator_id] = item2
+                self.variables[third_iterator_id] = item3
+                for statement in statement_sequence:
+                    statement.evaluate()
+
+            del self.variables[first_iterator_id]
+            del self.variables[second_iterator_id]
+            del self.variables[third_iterator_id]
+
+        return ParseTreeNode(
+            evaluator,
+            production.ID0, production.ID1, production.ID2,
+            production.triple_iterator, production.statement_sequence
         )
 
     @_("NODES ID") # type: ignore
@@ -80,18 +136,12 @@ class GRLParser(Parser):
     def single_iterator(self, production):
         def evaluator(graph_id: str, edge: tuple[str, str]):
             graph = self._get_graph(graph_id)
-            has_negative_weights = any(
-                graph.get_edge_data(source, dest).get("weight", 1) < 0
-                for source, dest in graph.edges
-            )
+            has_negative_weights = self._graph_has_negative_weights(graph)
 
             return [
                 str(item)
                 for item in nx.shortest_path(
-                    graph,
-                    edge[0],
-                    edge[1],
-                    "weight",
+                    graph, edge[0], edge[1], "weight",
                     "bellman-ford" if has_negative_weights else "dijkstra"
                 )
             ]
@@ -107,6 +157,55 @@ class GRLParser(Parser):
             ],
             production.ID, production.node
         )
+
+    @_("EDGES ID") # type: ignore
+    def double_iterator(self, production):
+        return ParseTreeNode(
+            lambda graph_id: [
+                (str(source), str(dest))
+                for source, dest in self._get_graph(graph_id).edges
+            ],
+            production.ID
+        )
+
+    @_("DISTANCE FROM node ID") # type: ignore
+    def double_iterator(self, production):
+        def evaluator(graph_id: str, node: str):
+            graph = self._get_graph(graph_id)
+            if node not in graph:
+                raise ValueError(f"Node {node} not in graph {graph_id}")
+
+            has_negative_weights = self._graph_has_negative_weights(graph)
+            shortest_paths: dict[str, int | float] = nx.shortest_path_length(
+                graph,
+                source=node,
+                weight="weight",
+                method="bellman-ford" if has_negative_weights else "dijkstra"
+            )
+
+            return list(shortest_paths.items())
+
+        return ParseTreeNode(evaluator, production.ID, production.node)
+
+    @_("DISTANCE MATRIX ID") # type: ignore
+    def triple_iterator(self, production):
+        def evaluator(graph_id: str) -> list[tuple[str, str, int | float]]:
+            graph = self._get_graph(graph_id)
+
+            has_negative_weights = self._graph_has_negative_weights(graph)
+            shortest_paths: dict[str, dict[str, int | float]] = nx.shortest_path_length(
+                graph,
+                weight="weight",
+                method="bellman-ford" if has_negative_weights else "dijkstra"
+            )
+
+            return [
+                (source, dest, length)
+                for source, length_by_target in shortest_paths
+                for dest, length in length_by_target.items()
+            ]
+
+        return ParseTreeNode(evaluator, production.ID)
 
     # ----- STATEMENTS -----
 
@@ -275,6 +374,23 @@ class GRLParser(Parser):
                 raise ValueError(f"Edge {edge} not in graph {graph_id}")
 
             return graph.get_edge_data(*edge).get("weight", 1)
+
+        return ParseTreeNode(evaluator, production.ID, production.edge)
+
+    @_("GET DISTANCE BETWEEN edge ID") # type: ignore
+    def number(self, production):
+        def evaluator(graph_id: str, edge: tuple[str, str]) -> int | float:
+            graph = self._get_graph(graph_id)
+            if edge[0] not in graph:
+                raise ValueError(f"Node {edge[0]} not in graph {graph_id}")
+            if edge[1] not in graph:
+                raise ValueError(f"Node {edge[1]} not in graph {graph_id}")
+
+            has_negative_weights = self._graph_has_negative_weights(graph)
+            return nx.shortest_path_length(
+                graph, edge[0], edge[1], "weight",
+                "bellman-ford" if has_negative_weights else "dijkstra"
+            )
 
         return ParseTreeNode(evaluator, production.ID, production.edge)
 

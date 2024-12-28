@@ -6,7 +6,7 @@ class GRLLexer(Lexer):
     keywords = {
         ADD, RM, GET, SET, IS, # type: ignore
         GRAPH_TYPE, NODE, EDGE, WEIGHT, # type: ignore
-        DISTANCE, DISTANCE_TYPE, # type: ignore
+        DISTANCE, BETWEEN, FROM, MATRIX, # type: ignore
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
         DRAW, PRINT, EXPORT, IMPORT, EXIT, # type: ignore
         FOR, OF, IF, ELSEIF, ELSE, # type: ignore
@@ -24,7 +24,7 @@ class GRLLexer(Lexer):
 
     BOOLEAN = r"(TRUE|FALSE)"
     STRING = r'"(?:[^"\\]|\\.)*"'
-    NUMBER = r"(\d+|\d+\.\d*)"
+    NUMBER = r"-?(\d+|\d+\.\d*)"
 
     COMPARATOR = r"(==|!=|<=|<|>=|>)"
     HAS = r"HAS"
@@ -48,7 +48,9 @@ class GRLLexer(Lexer):
     IS = r"IS"
 
     DISTANCE = r"DISTANCE"
-    DISTANCE_TYPE = r"(BETWEEN|FROM|MATRIX)"
+    BETWEEN = r"BETWEEN"
+    FROM = r"FROM"
+    MATRIX = r"MATRIX"
 
     FOR = r"FOR"
     OF = r"OF"

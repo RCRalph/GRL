@@ -16,3 +16,12 @@ FOR node OF SHORTEST PATH "node_1" "node_5" g1 {
 }
 
 DRAW g1
+
+FOR source, dest OF EDGES g1 {PRINT GET WEIGHT OF EDGE source dest g1}
+
+FOR source, dest, distance OF DISTANCE MATRIX g1 {
+    PRINT source
+    PRINT dest
+    PRINT distance
+}
+
