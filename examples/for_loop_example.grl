@@ -1,0 +1,15 @@
+ADD GRAPH g1
+ADD EDGE "node_1" "node_2" g1
+ADD EDGE "node_2" "node_3" g1
+ADD EDGE "node_3" "node_4" g1
+ADD EDGE "node_4" "node_5" g1
+ADD EDGE "node_3" "node_6" g1
+ADD EDGE "node_6" "node_7" g1
+ADD EDGE "node_7" "node_5" g1
+SET WEIGHT OF EDGE "node_4" "node_5" 1000 g1
+
+PRINT g1
+
+FOR node OF SHORTEST PATH "node_1" "node_5" g1 {
+    PRINT node
+}
