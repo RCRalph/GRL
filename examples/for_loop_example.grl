@@ -8,8 +8,11 @@ ADD EDGE "node_6" "node_7" g1
 ADD EDGE "node_7" "node_5" g1
 SET WEIGHT OF EDGE "node_4" "node_5" 1000 g1
 
-PRINT g1
+DRAW g1
 
 FOR node OF SHORTEST PATH "node_1" "node_5" g1 {
-    PRINT node
+    ADD EDGE node "node" g1
+    SET WEIGHT OF EDGE node "node" 15 g1
 }
+
+DRAW g1
