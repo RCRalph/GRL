@@ -4,22 +4,22 @@ class GRLLexer(Lexer):
     ignore = ' \t'
 
     keywords = {
-        ADD, RM, GET, SET, # type: ignore
-        GRAPH, NODE, EDGE, WEIGHT, # type: ignore
+        ADD, RM, GET, SET, IS, # type: ignore
+        GRAPH_TYPE, NODE, EDGE, WEIGHT, # type: ignore
         DISTANCE, DISTANCE_TYPE, # type: ignore
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
-        PRINT, EXPORT, IMPORT, EXIT, # type: ignore
-        FOR, COMMA, OF, IF, ELSEIF, ELSE, # type: ignore
+        DRAW, PRINT, EXPORT, IMPORT, EXIT, # type: ignore
+        FOR, OF, IF, ELSEIF, ELSE, # type: ignore
     }
 
     tokens = {
         *keywords,
         BOOLEAN, STRING, NUMBER, # type: ignore
         COMPARATOR, HAS, EXISTS, # type: ignore
-        LINE_SEPARATOR, # type: ignore
         LEFT_PARENT, RIGHT_PARENT, # type: ignore
         LEFT_CURLY, RIGHT_CURLY, # type: ignore
-        ID, ANY, # type: ignore
+        COMMA, LINE_SEPARATOR, # type: ignore
+        ID, # type: ignore
     }
 
     BOOLEAN = r"(TRUE|FALSE)"
@@ -30,7 +30,13 @@ class GRLLexer(Lexer):
     HAS = r"HAS"
     EXISTS = r"EXISTS"
 
-    GRAPH = r"(DI)?GRAPH"
+    NODES = r"NODES"
+    EDGES = r"EDGES"
+    TOPOLOGICAL_SORT = r"TOPOLOGICAL SORT"
+    SHORTEST_PATH = r"SHORTEST PATH"
+    NEIGHBORS = r"NEIGHBORS"
+
+    GRAPH_TYPE = r"(DI)?GRAPH"
     NODE = r"NODE"
     EDGE = r"EDGE"
     WEIGHT = r"WEIGHT"
@@ -39,15 +45,10 @@ class GRLLexer(Lexer):
     RM = r"RM"
     GET = r"GET"
     SET = r"SET"
+    IS = r"IS"
 
     DISTANCE = r"DISTANCE"
     DISTANCE_TYPE = r"(BETWEEN|FROM|MATRIX)"
-
-    NODES = r"NODES"
-    EDGES = r"EDGES"
-    TOPOLOGICAL_SORT = r"TOPOLOGICAL SORT"
-    SHORTEST_PATH = r"SHORTEST PATH"
-    NEIGHBORS = r"NEIGHBORS"
 
     FOR = r"FOR"
     OF = r"OF"
@@ -62,11 +63,10 @@ class GRLLexer(Lexer):
     LINE_SEPARATOR = r"[;\n]"
     COMMA = r","
 
+    DRAW = r"DRAW"
     PRINT = r"PRINT"
     EXPORT = r"EXPORT"
     IMPORT = r"IMPORT"
     EXIT = r"EXIT"
 
     ID = r"[_a-z][_a-z0-9]*"
-
-    ANY = r".+"
