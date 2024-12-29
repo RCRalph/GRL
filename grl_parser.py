@@ -1,4 +1,6 @@
+from io import TextIOWrapper
 from typing import Any
+
 import networkx as nx
 import matplotlib.pyplot as plt
 from sly import Parser
@@ -8,7 +10,9 @@ from grl_lexer import GRLLexer
 
 
 class GRLParser(Parser):
-    tokens = GRLLexer.tokens
+    lexer = GRLLexer()
+
+    tokens = lexer.tokens
 
     precedence = [
         ("nonassoc", "COMPARATOR"),
@@ -33,18 +37,91 @@ class GRLParser(Parser):
 
         raise TypeError(f"Variable {graph_id} is not a graph")
 
-    @staticmethod
-    def _graph_has_negative_weights(graph: nx.Graph):
+    def _graph_has_negative_weights(self, graph: nx.Graph):
         return any(
             graph.get_edge_data(u, v).get("weight", 1) < 0
             for u, v in graph.edges
         )
+
+    def _import_graph(self, graph_id: str, file_lines: list[str]):
+        for line in file_lines:
+            self.parse(self.lexer.tokenize(f"{line[:-1]} {graph_id}"))
+
+    def _export_graph(self, graph: nx.Graph, file: TextIOWrapper):
+        match graph:
+            case nx.DiGraph():
+                file.write("ADD DIGRAPH\n")
+            case nx.Graph():
+                file.write("ADD GRAPH\n")
+            case _:
+                raise ValueError(f"Unknown graph type: {type(graph)}")
+
+        for node in graph:
+            file.write(f"ADD NODE \"{node}\"\n")
+
+        for source, dest in graph.edges:
+            file.write(f"ADD EDGE \"{source}\" \"{dest}\"\n")
+            if "weight" in (edge_data := graph.get_edge_data(source, dest)):
+                file.write(
+                    f"SET WEIGHT OF EDGE \"{source}\" \"{dest}\" {edge_data["weight"]}\n"
+                )
+
+    # ----- PROGRAM -----
 
     @_("statement_sequence") # type: ignore
     def program(self, production):
         statement_sequence: list[ParseTreeNode[None]] = production.statement_sequence
         for statement in statement_sequence:
             statement.evaluate()
+
+    # ----- CONTROL FLOW -----
+
+    @_("IF boolean LEFT_CURLY statement_sequence RIGHT_CURLY { elseif_statement } [ else_statement ]") # type: ignore
+    def statement(self, production):
+        def evaluator(
+            boolean: bool,
+            statement_sequence: list[ParseTreeNode[None]],
+            elseif_statements: list[ParseTreeNode[None]],
+            else_statement: tuple[ParseTreeNode[None]] | None,
+        ):
+            if boolean:
+                for statement in statement_sequence:
+                    statement.evaluate()
+                return
+
+            for elseif_statement in elseif_statements:
+                if elseif_statement.evaluate():
+                    return
+
+            if else_statement:
+                else_statement[0].evaluate()
+
+        return ParseTreeNode(
+            evaluator,
+            production.boolean, production.statement_sequence,
+            production.elseif_statement, production.else_statement
+        )
+
+    @_("ELSEIF boolean LEFT_CURLY statement_sequence RIGHT_CURLY") # type: ignore
+    def elseif_statement(self, production):
+        def evaluator(boolean: bool, statement_sequence: list[ParseTreeNode[None]]):
+            if boolean:
+                for statement in statement_sequence:
+                    statement.evaluate()
+
+            return boolean
+
+        return ParseTreeNode(
+            evaluator, production.boolean, production.statement_sequence
+        )
+
+    @_("ELSE LEFT_CURLY statement_sequence RIGHT_CURLY") # type: ignore
+    def else_statement(self, production):
+        def evaluator(statement_sequence: list[ParseTreeNode[None]]):
+            for statement in statement_sequence:
+                statement.evaluate()
+
+        return (ParseTreeNode(evaluator, production.statement_sequence),)
 
     # ----- ITERATION -----
 
@@ -215,7 +292,7 @@ class GRLParser(Parser):
 
     @_("") # type: ignore
     def statement(self, production) -> list[ParseTreeNode[None]]:
-        return ParseTreeNode(lambda: None)
+        return ParseTreeNode.empty()
 
     @_("EXIT") # type: ignore
     def statement(self, production):
@@ -256,6 +333,28 @@ class GRLParser(Parser):
             plt.show()
 
         return ParseTreeNode(evaluator, production.ID)
+
+    @_("IMPORT ID string") # type: ignore
+    def statement(self, production):
+        def evaluator(graph_id: str, file_path: str):
+            if graph_id in self.variables:
+                raise ValueError(f"Entity {graph_id} already exists")
+
+            with open(file_path + ".grlg") as file:
+                file_lines = file.readlines()
+
+            self._import_graph(graph_id, file_lines)
+
+        return ParseTreeNode(evaluator, production.ID, production.string)
+
+    @_("EXPORT ID string") # type: ignore
+    def statement(self, production):
+        def evaluator(graph_id: str, file_path: str):
+            graph = self._get_graph(graph_id)
+            with open(file_path + ".grlg", "w+") as file:
+                self._export_graph(graph, file)
+
+        return ParseTreeNode(evaluator, production.ID, production.string)
 
     @_("ADD entity ID") # type: ignore
     def statement(self, production):

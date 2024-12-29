@@ -16,7 +16,6 @@ class GRLLexer(Lexer):
         *keywords,
         BOOLEAN, STRING, NUMBER, # type: ignore
         COMPARATOR, HAS, EXISTS, # type: ignore
-        LEFT_PARENT, RIGHT_PARENT, # type: ignore
         LEFT_CURLY, RIGHT_CURLY, # type: ignore
         COMMA, LINE_SEPARATOR, # type: ignore
         ID, # type: ignore
@@ -58,8 +57,6 @@ class GRLLexer(Lexer):
     ELSEIF = r"ELSEIF"
     ELSE = r"ELSE"
 
-    LEFT_PARENT = r"\("
-    RIGHT_PARENT = r"\)"
     LEFT_CURLY = r"{"
     RIGHT_CURLY = r"}"
     LINE_SEPARATOR = r"[;\n]"
