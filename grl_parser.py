@@ -1,3 +1,5 @@
+import codecs
+from functools import partial
 from io import TextIOWrapper
 from typing import Any
 
@@ -21,6 +23,7 @@ class GRLParser(Parser):
 
     def __init__(self):
         self.variables: dict[str, Any] = {}
+        self.print = partial(print, end="")
 
     def _get_variable(self, variable_name: str) -> Any:
         if variable_name not in self.variables:
@@ -301,21 +304,21 @@ class GRLParser(Parser):
     @_("PRINT boolean") # type: ignore
     def statement(self, production):
         return ParseTreeNode(
-            lambda x: print(str(x).upper()), production.boolean
+            lambda x: self.print(str(x).upper()), production.boolean
         )
 
     @_("PRINT number") # type: ignore
     def statement(self, production):
-        return ParseTreeNode(print, production.number)
+        return ParseTreeNode(self.print, production.number)
 
     @_("PRINT string") # type: ignore
     def statement(self, production):
-        return ParseTreeNode(print, production.string)
+        return ParseTreeNode(self.print, production.string)
 
     @_("PRINT ID") # type: ignore
     def statement(self, production):
         return ParseTreeNode(
-            lambda x: print(self._get_variable(x)),
+            lambda x: self.print(self._get_variable(x)),
             production.ID
         )
 
@@ -573,5 +576,8 @@ class GRLParser(Parser):
 
     @_("STRING") # type: ignore
     def string(self, production):
-        return ParseTreeNode[str](lambda x: x[1:-1], production.STRING)
+        return ParseTreeNode[str](
+            lambda x: codecs.getdecoder("unicode_escape")(x[1:-1])[0],
+            production.STRING
+        )
 
