@@ -462,7 +462,7 @@ class GRLParser(Parser):
 
         return ParseTreeNode(evaluator, production.ID, production.GRAPH_TYPE)
 
-    @_("HAS node ID") # type: ignore
+    @_("HAS NODE node ID") # type: ignore
     def boolean(self, production):
         return ParseTreeNode(
             lambda graph_id, node: node in self._get_graph(graph_id),
