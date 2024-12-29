@@ -322,6 +322,14 @@ class GRLParser(Parser):
             production.ID
         )
 
+    @_("RUN string") # type: ignore
+    def statement(self, production):
+        def evaluator(file_path: str):
+            with open(file_path) as file:
+                self.parse(self.lexer.tokenize(file.read()))
+
+        return ParseTreeNode(evaluator, production.string)
+
     @_("DRAW ID") # type: ignore
     def statement(self, production):
         def evaluator(graph_id: str):

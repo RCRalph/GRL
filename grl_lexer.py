@@ -8,7 +8,7 @@ class GRLLexer(Lexer):
         GRAPH_TYPE, NODE, EDGE, WEIGHT, # type: ignore
         DISTANCE, BETWEEN, FROM, MATRIX, # type: ignore
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
-        DRAW, PRINT, EXPORT, IMPORT, EXIT, # type: ignore
+        DRAW, PRINT, EXPORT, IMPORT, EXIT, RUN, # type: ignore
         FOR, OF, IF, ELSEIF, ELSE, # type: ignore
         HAS, EXISTS, COUNT # type: ignore
     }
@@ -66,6 +66,7 @@ class GRLLexer(Lexer):
 
     DRAW = r"DRAW"
     PRINT = r"PRINT"
+    RUN = r"RUN"
     EXPORT = r"EXPORT"
     IMPORT = r"IMPORT"
     EXIT = r"EXIT"
