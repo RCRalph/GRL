@@ -1,0 +1,92 @@
+<lower_letter> ::= "a" | "b" | "c" | ... | "z"
+<upper_letter> ::= "A" | "B" | "C" | ... | "Z"
+<digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<underscore> ::= "_"
+<dot> ::= "."
+<minus> ::= "-"
+<identifier_character> ::= <lower_letter> | <underscore>
+<identifier_character_or_digit> ::= <identifier_character> | <digit>
+<line_separator> ::= "\n" | ";"
+
+<symbol> ::= <lower_letter> | <upper_letter> | <digit> | <underscore> | <dot>
+<text> ::= "" | <text> <symbol>
+<string> ::= '"' <text> '"'
+
+<identifier> ::= <identifier_character> | <identifier> <identifier_character_or_digit>
+<bool_literal> ::= "TRUE" | "FALSE"
+
+<digit_sequence> ::= <digit>
+                   | <digit_sequence> <digit>
+                   | <digit_sequence> <dot> <digit_sequence>
+
+<number> ::= <digit_sequence>
+           | <minus> <digit_sequence>
+            | "NODE COUNT" <identifier>
+           | "EDGE COUNT" <identifier>
+           | "GET WEIGHT OF EDGE" <edge> <identifier>
+           | "DISTANCE BETWEEN" <edge> <identifier>
+
+<comparable> ::= <identifier> | <bool_expr> | <number> | <string>
+<comparison> ::= <comparable> "==" <comparable>
+               | <comparable> "!=" <comparable>
+               | <comparable> "<" <comparable>
+               | <comparable> "<=" <comparable>
+               | <comparable> ">" <comparable>
+               | <comparable> ">=" <comparable>
+
+<bool_expr> ::= <bool_literal>
+              | <comparison>
+              | "HAS NODE" <node> <identifier>
+              | "HAS EDGE" <edge> <identifier>
+              | "IS" <graph_type> <identifier>
+
+<node> ::= <string> | <identifier>
+<edge> ::= <node> <node>
+
+<graph_type> ::= "GRAPH" | "DIGRAPH"
+<entity> ::= <graph_type> | "NODE" <node> | "EDGE" <edge>
+
+<add_operation> ::= "ADD" <entity> <identifier>
+<rm_operation> ::= "RM" <entity> <identifier>
+<set_operation> ::= "SET WEIGHT OF EDGE" <edge> <number> <identifier>
+
+<single_iterator> ::= "NODES" <identifier>
+                    | "TOPOLOGICAL SORT" <identifier>
+                    | "SHORTEST PATH" <edge> <identifier>
+                    | "NEIGHBORS" <node> <identifier>
+
+<double_iterator> ::= "EDGES" <identifier>
+                    | "DISTANCE FROM" <node> <identifier>
+
+<triple_iterator> ::= "DISTANCE MATRIX" <identifier>
+
+<if_statement> ::= "IF" <bool_expr> {" <program> "}" { <elseif_statement> } [ <else_statement> ]
+<elseif_statement> ::= "ELSEIF" <bool_expr> "{" <program> "}"
+<else_statement> ::= "ELSE" "{" <program> "}"
+
+<for_loop> ::= "FOR" <identifier> "OF" <single_iterator> "{" <program> "}"
+             | "FOR" <identifier> "," <identifier> "OF" <double_iterator> "{" <program> "}"
+             | "FOR" <identifier> "," <identifier> "," <identifier> "OF" <triple_iterator> "{" <program> "}"
+
+<print> ::= "PRINT" <comparable>
+<draw> ::= "DRAW" <identifier>
+<export> ::= "EXPORT" <identifier> <string>
+<import> ::= "IMPORT" <identifier> <string>
+<run> ::= "RUN" <string>
+<exit> ::= "EXIT"
+
+<statement> ::= <if_statement>
+              | <for_loop>
+              | <add_operation>
+              | <rm_operation>
+              | <set_operation>
+              | <print>
+              | <draw>
+              | <export>
+              | <import>
+              | <run>
+              | <exit>
+              | ""
+
+<statement_sequence> ::= <statement> { <line_separator> <statement> }
+<program> ::= <statement_sequence>
