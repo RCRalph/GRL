@@ -465,6 +465,20 @@ class GRLParser(Parser):
             production.ID, production.edge
         )
 
+    @_("NODE COUNT ID") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(
+            lambda graph_id: len(self._get_graph(graph_id).nodes),
+            production.ID
+        )
+
+    @_("EDGE COUNT ID") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(
+            lambda graph_id: len(self._get_graph(graph_id).edges),
+            production.ID
+        )
+
     @_("GET WEIGHT OF EDGE edge ID") # type: ignore
     def number(self, production):
         def evaluator(graph_id: str, edge: tuple[str, str]):

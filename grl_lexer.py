@@ -10,12 +10,13 @@ class GRLLexer(Lexer):
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
         DRAW, PRINT, EXPORT, IMPORT, EXIT, # type: ignore
         FOR, OF, IF, ELSEIF, ELSE, # type: ignore
+        HAS, EXISTS, COUNT # type: ignore
     }
 
     tokens = {
         *keywords,
         BOOLEAN, STRING, NUMBER, # type: ignore
-        COMPARATOR, HAS, EXISTS, # type: ignore
+        COMPARATOR,  # type: ignore
         LEFT_CURLY, RIGHT_CURLY, # type: ignore
         COMMA, LINE_SEPARATOR, # type: ignore
         ID, # type: ignore
@@ -28,6 +29,7 @@ class GRLLexer(Lexer):
     COMPARATOR = r"(==|!=|<=|<|>=|>)"
     HAS = r"HAS"
     EXISTS = r"EXISTS"
+    COUNT = r"COUNT"
 
     NODES = r"NODES"
     EDGES = r"EDGES"
