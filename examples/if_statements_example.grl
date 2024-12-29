@@ -1,0 +1,21 @@
+IMPORT g1 "exported_graph"
+
+IF IS DIGRAPH g1 {
+    PRINT "Graph is a directed graph\n"
+} ELSEIF IS GRAPH g1 {
+    PRINT "Graph is a graph, but isn't a directed graph\n"
+} ELSE {
+    PRINT "Graph isn't a graph\n"
+}
+
+IF NODE COUNT g1 == 6 {
+    PRINT "Graph has 6 nodes\n"
+}
+
+IF EDGE COUNT g1 <= 5 {
+    PRINT "Graph has less than 5 edges\n"
+} ELSEIF EDGE COUNT g1 <= 10 {
+    PRINT "Graph g1 has between 6 and 10 edges\n"
+} ELSE {
+    PRINT "Graph has over 10 edges\n"
+}

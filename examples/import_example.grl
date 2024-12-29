@@ -1,0 +1,2 @@
+IMPORT g1 "exported_graph"
+DRAW g1

@@ -3,13 +3,29 @@ ADD NODE "0" my_graph
 ADD EDGE "1" "2" my_graph
 SET WEIGHT OF EDGE "1" "2" 10 my_graph
 
+PRINT "Graph exists? "
 PRINT EXISTS my_graph
+
 DRAW my_graph
+
+PRINT "Weight of edge between \"1\" and \"2\" is: "
 PRINT GET WEIGHT OF EDGE "1" "2" my_graph
+PRINT "\n"
+
+PRINT "Graph has edge between \"1\" and \"2\"? "
+PRINT HAS EDGE "1" "2" my_graph
+PRINT "\n"
+
+PRINT "Graph has edge between \"2\" and \"1\"? "
 PRINT HAS EDGE "2" "1" my_graph
+PRINT "\n"
 
 RM NODE "1" my_graph
+PRINT "Graph has edge between \"1\" and \"2\"? "
 PRINT HAS EDGE "1" "2" my_graph
+PRINT "\n"
 
 RM GRAPH my_graph
+PRINT "Graph exists? "
 PRINT EXISTS my_graph
+PRINT "\n"
