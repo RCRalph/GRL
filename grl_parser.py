@@ -238,6 +238,30 @@ class GRLParser(Parser):
             production.ID, production.node
         )
 
+    @_("DFS node ID") # type: ignore
+    def double_iterator(self, production):
+        return ParseTreeNode(
+            lambda graph_id, start_node: [
+                (str(source), str(dest))
+                for source, dest in nx.dfs_edges(
+                    self._get_graph(graph_id), start_node
+                )
+            ],
+            production.ID, production.node
+        )
+
+    @_("BFS node ID") # type: ignore
+    def double_iterator(self, production):
+        return ParseTreeNode(
+            lambda graph_id, start_node: [
+                (str(source), str(dest))
+                for source, dest in nx.bfs_edges(
+                    self._get_graph(graph_id), start_node
+                )
+            ],
+            production.ID, production.node
+        )
+
     @_("EDGES ID") # type: ignore
     def double_iterator(self, production):
         return ParseTreeNode(
@@ -588,4 +612,3 @@ class GRLParser(Parser):
             lambda x: codecs.getdecoder("unicode_escape")(x[1:-1])[0],
             production.STRING
         )
-

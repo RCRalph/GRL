@@ -20,4 +20,3 @@ FOR source, dest, distance OF DISTANCE MATRIX g1 {
     PRINT distance
     PRINT "\n"
 }
-
