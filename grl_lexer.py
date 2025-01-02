@@ -5,8 +5,8 @@ class GRLLexer(Lexer):
 
     keywords = {
         ADD, RM, GET, SET, IS, # type: ignore
-        GRAPH_TYPE, NODE, EDGE, WEIGHT, # type: ignore
-        DISTANCE, BETWEEN, FROM, MATRIX, # type: ignore
+        GRAPH_TYPE, NODE, EDGE, WEIGHT, LENGTH, # type: ignore
+        DISTANCE, BETWEEN, FROM, MATRIX, DFS, BFS, # type: ignore
         NODES, EDGES, TOPOLOGICAL_SORT, SHORTEST_PATH, NEIGHBORS, # type: ignore
         DRAW, PRINT, EXPORT, IMPORT, EXIT, RUN, # type: ignore
         FOR, OF, IF, ELSEIF, ELSE, # type: ignore
@@ -41,6 +41,7 @@ class GRLLexer(Lexer):
     NODE = r"NODE"
     EDGE = r"EDGE"
     WEIGHT = r"WEIGHT"
+    LENGTH = r"LENGTH"
 
     ADD = r"ADD"
     RM = r"RM"
@@ -52,6 +53,8 @@ class GRLLexer(Lexer):
     BETWEEN = r"BETWEEN"
     FROM = r"FROM"
     MATRIX = r"MATRIX"
+    DFS = r"DFS"
+    BFS = r"BFS"
 
     FOR = r"FOR"
     OF = r"OF"

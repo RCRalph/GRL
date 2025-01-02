@@ -21,10 +21,13 @@
 
 <number> ::= <digit_sequence>
            | <minus> <digit_sequence>
-            | "NODE COUNT" <identifier>
+           | "NODE COUNT" <identifier>
            | "EDGE COUNT" <identifier>
            | "GET WEIGHT OF EDGE" <edge> <identifier>
            | "DISTANCE BETWEEN" <edge> <identifier>
+           | "LENGTH" <single_iterator>
+           | "LENGTH" <double_iterator>
+           | "LENGTH" <triple_iterator>
 
 <comparable> ::= <identifier> | <bool_expr> | <number> | <string>
 <comparison> ::= <comparable> "==" <comparable>
@@ -57,6 +60,8 @@
 
 <double_iterator> ::= "EDGES" <identifier>
                     | "DISTANCE FROM" <node> <identifier>
+                    | "DFS" <node> <identifier>
+                    | "BFS" <node> <identifier>
 
 <triple_iterator> ::= "DISTANCE MATRIX" <identifier>
 

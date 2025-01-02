@@ -311,6 +311,18 @@ class GRLParser(Parser):
 
         return ParseTreeNode(evaluator, production.ID)
 
+    @_("LENGTH single_iterator") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(len, production.single_iterator)
+
+    @_("LENGTH double_iterator") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(len, production.double_iterator)
+
+    @_("LENGTH triple_iterator") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(len, production.triple_iterator)
+
     # ----- STATEMENTS -----
 
     @_("statement { LINE_SEPARATOR statement }") # type: ignore
