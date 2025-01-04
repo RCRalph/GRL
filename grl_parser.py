@@ -1,5 +1,4 @@
 import codecs
-from functools import partial
 from io import TextIOWrapper
 from typing import Any
 
@@ -17,19 +16,27 @@ class GRLParser(Parser):
     tokens = lexer.tokens
 
     precedence = [
+        ("right", "PRINT"),
+        ("left", "LOGICAL_IMPLIES"),
+        ("left", "LOGICAL_XOR"),
+        ("left", "LOGICAL_OR"),
+        ("left", "LOGICAL_AND"),
+        ("right", "LOGICAL_NOT"),
         ("nonassoc", "COMPARATOR"),
-        ('right', 'PRINT'),
+        ("left", "PLUS", "MINUS"),
+        ("left", "MULTIPLY", "DIVIDE"),
+        ("left", "POWER"),
+        ("right", "STR", "NUM", "BOOL"),
     ]
 
     def __init__(self):
         self.variables: dict[str, Any] = {}
-        self.print = partial(print, end="")
 
-    def _get_variable(self, variable_name: str) -> Any:
-        if variable_name not in self.variables:
-            raise ValueError(f"Variable {variable_name} doesn't exist")
+    def _get_variable(self, variable_id: str) -> Any:
+        if variable_id not in self.variables:
+            raise ValueError(f"Variable {variable_id} doesn't exist")
 
-        return self.variables[variable_name]
+        return self.variables[variable_id]
 
     def _get_graph(self, graph_id: str) -> nx.Graph:
         if graph_id not in self.variables:
@@ -339,24 +346,23 @@ class GRLParser(Parser):
 
     @_("PRINT boolean") # type: ignore
     def statement(self, production):
-        return ParseTreeNode(
-            lambda x: self.print(str(x).upper()), production.boolean
-        )
+        return ParseTreeNode(lambda x: print(str(x).upper()), production.boolean)
 
     @_("PRINT number") # type: ignore
     def statement(self, production):
-        return ParseTreeNode(self.print, production.number)
+        return ParseTreeNode(print, production.number)
 
     @_("PRINT string") # type: ignore
     def statement(self, production):
-        return ParseTreeNode(self.print, production.string)
+        return ParseTreeNode(print, production.string)
 
     @_("PRINT ID") # type: ignore
     def statement(self, production):
-        return ParseTreeNode(
-            lambda x: self.print(self._get_variable(x)),
-            production.ID
-        )
+        return ParseTreeNode(print, self._get_variable(production.ID))
+
+    @_("PRINT") # type: ignore
+    def statement(self, production):
+        return ParseTreeNode(print)
 
     @_("RUN string") # type: ignore
     def statement(self, production):
@@ -453,6 +459,28 @@ class GRLParser(Parser):
 
         return ParseTreeNode(
             evaluator, production.ID, production.edge, production.number
+        )
+
+    @_( # type: ignore
+        "SET ID string",
+        "SET ID number",
+        "SET ID boolean",
+    )
+    def statement(self, production):
+        def evaluator(variable_id: str, value: str | int | float | bool):
+            self.variables[variable_id] = value
+
+        return ParseTreeNode(
+            evaluator, production.ID, production[2]
+        )
+
+    @_("SET ID ID") # type: ignore
+    def statement(self, production):
+        def evaluator(target_id: str, source_id: str):
+            self.variables[target_id] = self._get_variable(source_id)
+
+        return ParseTreeNode(
+            evaluator, production.ID0, production.ID1
         )
 
     # ----- ENTITIES -----
@@ -554,9 +582,19 @@ class GRLParser(Parser):
 
         return ParseTreeNode(evaluator, production.ID, production.edge)
 
-    # ----- COMPARISONS -----
+    # ----- EXPRESSIONS -----
 
-    @_("comparable COMPARATOR comparable") # type: ignore
+    @_( # type: ignore
+        "string COMPARATOR string",
+        "string COMPARATOR number",
+        "string COMPARATOR boolean",
+        "number COMPARATOR string",
+        "number COMPARATOR number",
+        "number COMPARATOR boolean",
+        "boolean COMPARATOR string",
+        "boolean COMPARATOR number",
+        "boolean COMPARATOR boolean"
+    )
     def boolean(self, production):
         def evaluator(left: Any, comparator: str, right: Any):
             match comparator:
@@ -575,20 +613,172 @@ class GRLParser(Parser):
 
         return ParseTreeNode(
             evaluator,
-            production.comparable0, production.COMPARATOR, production.comparable1
+            production[0], production.COMPARATOR, production[2]
         )
 
-    @_("boolean") # type: ignore
-    def comparable(self, production):
-        return ParseTreeNode[bool](lambda x: x, production.boolean)
+    @_("ID COMPARATOR ID") # type: ignore
+    def boolean(self, production):
+        def evaluator(left_id: str, comparator: str, right_id: str):
+            left_variable = self._get_variable(left_id)
+            right_variable = self._get_variable(right_id)
 
-    @_("number") # type: ignore
-    def comparable(self, production):
+            match comparator:
+                case "==":
+                    return left_variable == right_variable
+                case "!=":
+                    return left_variable != right_variable
+                case "<":
+                    return left_variable < right_variable
+                case "<=":
+                    return left_variable <= right_variable
+                case ">":
+                    return left_variable > right_variable
+                case ">=":
+                    return left_variable >= right_variable
+
+        return ParseTreeNode(
+            evaluator,
+            production[0], production.COMPARATOR, production[2]
+        )
+
+    @_("LOGICAL_NOT boolean") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode(lambda x: not x, production.boolean)
+
+    @_("boolean LOGICAL_AND boolean") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode[bool](lambda x, y: x and y, production.boolean0, production.boolean1)
+
+    @_("boolean LOGICAL_OR boolean") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode[bool](lambda x, y: x or y, production.boolean0, production.boolean1)
+
+    @_("boolean LOGICAL_XOR boolean") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode[bool](
+            lambda x, y: (x and (not y)) or ((not x) and y),
+            production.boolean0, production.boolean1
+        )
+
+    @_("boolean LOGICAL_IMPLIES boolean") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode[bool](
+            lambda x, y: (not x) or y,
+            production.boolean0, production.boolean1
+        )
+
+    @_( # type: ignore
+        "string PLUS string",
+        "string PLUS number",
+        "string PLUS boolean",
+        "number PLUS string",
+        "boolean PLUS string",
+    )
+    def string(self, production):
+        def evaluator(left: str | int | float | bool, right: str | int | float | bool):
+            if isinstance(left, bool):
+                left = str(left).upper()
+            if isinstance(right, bool):
+                right = str(right).upper()
+
+            return str(left) + str(right)
+
+        return ParseTreeNode[str](evaluator, production[0], production[2])
+
+    @_("number PLUS number") # type: ignore
+    def number(self, production):
+        return ParseTreeNode[int | float](lambda x, y: x + y, production.number0, production.number1)
+
+    @_("number MINUS number") # type: ignore
+    def number(self, production):
+        return ParseTreeNode[int | float](lambda x, y: x - y, production.number0, production.number1)
+
+    @_("number MULTIPLY number") # type: ignore
+    def number(self, production):
+        return ParseTreeNode[int | float](lambda x, y: x * y, production.number0, production.number1)
+
+    @_("number DIVIDE number") # type: ignore
+    def number(self, production):
+        return ParseTreeNode[int | float](lambda x, y: x / y, production.number0, production.number1)
+
+    @_("number POWER number") # type: ignore
+    def number(self, production):
+        return ParseTreeNode[int | float](lambda x, y: x ** y, production.number0, production.number1)
+
+    @_("LEFT_PARENT number RIGHT_PARENT") # type: ignore
+    def number(self, production):
         return ParseTreeNode[int | float](lambda x: x, production.number)
 
-    @_("string") # type: ignore
-    def comparable(self, production):
-        return ParseTreeNode[str](lambda x: x, production.string)
+    @_("LEFT_PARENT boolean RIGHT_PARENT") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode[bool](lambda x: x, production.boolean)
+
+    @_("LEFT_PARENT string RIGHT_PARENT") # type: ignore
+    def string(self, production):
+        return ParseTreeNode[bool](lambda x: x, production.string)
+
+    # ----- TYPE CASTING -----
+
+    @_("LEFT_PARENT STR string RIGHT_PARENT") # type: ignore
+    def string(self, production):
+        return ParseTreeNode(lambda x: x, production.string)
+
+    @_("LEFT_PARENT STR number RIGHT_PARENT") # type: ignore
+    def string(self, production):
+        return ParseTreeNode(str, production.number)
+
+    @_("LEFT_PARENT STR boolean RIGHT_PARENT") # type: ignore
+    def string(self, production):
+        return ParseTreeNode(lambda x: str(x).upper(), production.boolean)
+
+    @_("LEFT_PARENT NUM string RIGHT_PARENT") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(float, production.boolean)
+
+    @_("LEFT_PARENT NUM number RIGHT_PARENT") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(lambda x: x, production.number)
+
+    @_("LEFT_PARENT NUM boolean RIGHT_PARENT") # type: ignore
+    def number(self, production):
+        return ParseTreeNode(int, production.boolean)
+
+    @_("LEFT_PARENT BOOL string RIGHT_PARENT") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode(bool, production.number)
+
+    @_("LEFT_PARENT BOOL number RIGHT_PARENT") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode(bool, production.number)
+
+    @_("LEFT_PARENT BOOL boolean RIGHT_PARENT") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode(lambda x: x, production.boolean)
+
+    @_("LEFT_PARENT STR ID RIGHT_PARENT") # type: ignore
+    def string(self, production):
+        return ParseTreeNode(
+            lambda x: str(self._get_variable(x)),
+            production.ID
+        )
+
+    @_("LEFT_PARENT NUM ID RIGHT_PARENT") # type: ignore
+    def number(self, production):
+        def evaluator(variable_id: str):
+            variable = self._get_variable(variable_id)
+            if isinstance(variable, (int, float)):
+                return variable
+
+            return float(variable)
+
+        return ParseTreeNode(evaluator, production.ID)
+
+    @_("LEFT_PARENT BOOL ID RIGHT_PARENT") # type: ignore
+    def boolean(self, production):
+        return ParseTreeNode(
+            lambda x: bool(self._get_variable(x)),
+            production.ID
+        )
 
     # ----- LITERALS AND VARIABLES -----
 
@@ -601,10 +791,6 @@ class GRLParser(Parser):
     @_("string") # type: ignore
     def node(self, production):
         return ParseTreeNode[str](lambda x: x, production.string)
-
-    @_("ID") # type: ignore
-    def node(self, production):
-        return ParseTreeNode[str](lambda x: self._get_variable(x), production.ID)
 
     @_("BOOLEAN") # type: ignore
     def boolean(self, production):

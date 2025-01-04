@@ -3,20 +3,16 @@ IMPORT g1 "exported_graph"
 DRAW g1
 
 FOR node OF SHORTEST PATH "node_1" "node_5" g1 {
-    ADD EDGE node "node" g1
-    SET WEIGHT OF EDGE node "node" 15 g1
+    ADD EDGE (STR node) "node" g1
+    SET WEIGHT OF EDGE (STR node) "node" 15 g1
 }
 
 DRAW g1
 
-FOR source, dest OF EDGES g1 {PRINT GET WEIGHT OF EDGE source dest g1; PRINT "\n"}
+FOR source, dest OF EDGES g1 {
+    PRINT GET WEIGHT OF EDGE (STR source) (STR dest) g1
+}
 
 FOR source, dest, distance OF DISTANCE MATRIX g1 {
-    PRINT "Distance from "
-    PRINT source
-    PRINT " to "
-    PRINT dest
-    PRINT " is "
-    PRINT distance
-    PRINT "\n"
+    PRINT "Distance from " + (STR source) + " to " + (STR dest) + " is " + (NUM distance)
 }

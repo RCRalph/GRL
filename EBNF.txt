@@ -11,15 +11,24 @@
 <symbol> ::= <lower_letter> | <upper_letter> | <digit> | <underscore> | <dot>
 <text> ::= "" | <text> <symbol>
 <string> ::= '"' <text> '"'
+           | <string> "+" <string>
+           | <string> "+" <number>
+           | <string> "+" <bool_expr>
+           | <number> "+" <string>
+           | <bool_expr> "+" <string>
+           | "(" <string> ")"
+           | "(" "STR" <string> ")"
+           | "(" "STR" <number> ")"
+           | "(" "STR" <bool_expr> ")"
+           | "(" "STR" <identifier> ")"
 
 <identifier> ::= <identifier_character> | <identifier> <identifier_character_or_digit>
 <bool_literal> ::= "TRUE" | "FALSE"
 
-<digit_sequence> ::= <digit>
-                   | <digit_sequence> <digit>
-                   | <digit_sequence> <dot> <digit_sequence>
+<digit_sequence> ::= <digit> | <digit_sequence> <digit>
 
 <number> ::= <digit_sequence>
+           | <digit_sequence> <dot> <digit_sequence>
            | <minus> <digit_sequence>
            | "NODE COUNT" <identifier>
            | "EDGE COUNT" <identifier>
@@ -28,20 +37,45 @@
            | "LENGTH" <single_iterator>
            | "LENGTH" <double_iterator>
            | "LENGTH" <triple_iterator>
+           | ( "NUM" <identifier> )
+           | <number> "+" <number>
+           | <number> "-" <number>
+           | <number> "*" <number>
+           | <number> "/" <number>
+           | <number> "**" <number>
+           | "(" <number> ")"
+           | "(" "NUM" <string> ")"
+           | "(" "NUM" <number> ")"
+           | "(" "NUM" <bool_expr> ")"
+           | "(" "NUM" <identifier> ")"
 
-<comparable> ::= <identifier> | <bool_expr> | <number> | <string>
-<comparison> ::= <comparable> "==" <comparable>
-               | <comparable> "!=" <comparable>
-               | <comparable> "<" <comparable>
-               | <comparable> "<=" <comparable>
-               | <comparable> ">" <comparable>
-               | <comparable> ">=" <comparable>
+<comparator> ::= "==" | "!=" | "<" | "<=" | ">" | ">="
 
 <bool_expr> ::= <bool_literal>
               | <comparison>
               | "HAS NODE" <node> <identifier>
               | "HAS EDGE" <edge> <identifier>
               | "IS" <graph_type> <identifier>
+              | <string> <comparator> <string>
+              | <string> <comparator> <number>
+              | <string> <comparator> <bool_expr>
+              | <number> <comparator> <string>
+              | <number> <comparator> <number>
+              | <number> <comparator> <bool_expr>
+              | <bool_expr> <comparator> <string>
+              | <bool_expr> <comparator> <number>
+              | <bool_expr> <comparator> <bool_expr>
+              | <identifier> <comparator> <identifier>
+              | "NOT" <bool_expr>
+              | <bool_expr> "AND" <bool_expr>
+              | <bool_expr> "OR" <bool_expr>
+              | <bool_expr> "XOR" <bool_expr>
+              | <bool_expr> "=>" <bool_expr>
+              | "(" <bool_expr> ")"
+              | "(" "BOOL" <string> ")"
+              | "(" "BOOL" <number> ")"
+              | "(" "BOOL" <bool_expr> ")"
+              | "(" "BOOL" <identifier> ")"
 
 <node> ::= <string> | <identifier>
 <edge> ::= <node> <node>
@@ -73,12 +107,21 @@
              | "FOR" <identifier> "," <identifier> "OF" <double_iterator> "{" <program> "}"
              | "FOR" <identifier> "," <identifier> "," <identifier> "OF" <triple_iterator> "{" <program> "}"
 
-<print> ::= "PRINT" <comparable>
+<print> ::= "PRINT" <bool_expr>
+          | "PRINT" <number>
+          | "PRINT" <string>
+          | "PRINT" <identifier>
+
 <draw> ::= "DRAW" <identifier>
 <export> ::= "EXPORT" <identifier> <string>
 <import> ::= "IMPORT" <identifier> <string>
 <run> ::= "RUN" <string>
 <exit> ::= "EXIT"
+
+<set> ::= "SET" <identifier> <string>
+        | "SET" <identifier> <number>
+        | "SET" <identifier> <bool_expr>
+        | "SET" <identifier> <identifier>
 
 <statement> ::= <if_statement>
               | <for_loop>
@@ -91,6 +134,7 @@
               | <import>
               | <run>
               | <exit>
+              | <set>
               | ""
 
 <statement_sequence> ::= <statement> { <line_separator> <statement> }
