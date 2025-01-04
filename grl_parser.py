@@ -1,5 +1,7 @@
 import codecs
+from collections import defaultdict
 from io import TextIOWrapper
+import json
 from typing import Any
 
 import networkx as nx
@@ -53,28 +55,52 @@ class GRLParser(Parser):
             for u, v in graph.edges
         )
 
-    def _import_graph(self, graph_id: str, file_lines: list[str]):
-        for line in file_lines:
-            self.parse(self.lexer.tokenize(f"{line[:-1]} {graph_id}"))
+    def _get_new_graph_by_type(self, graph_type: str):
+        match graph_type:
+            case "GRAPH":
+                return nx.Graph()
+            case "DIGRAPH":
+                return nx.DiGraph()
+            case _:
+                raise ValueError(f"Unknown graph type: {repr(graph_type)}")
+
+    def _import_graph(self, graph_id: str, file: TextIOWrapper):
+        graph_type = file.readline()
+        graph = self._get_new_graph_by_type(graph_type[:-1])
+
+        graph_json = json.load(file)
+        for source in graph_json:
+            graph.add_node(source)
+
+            for dest_data in graph_json[source]:
+                match dest_data:
+                    case str() as dest:
+                        graph.add_edge(source, dest)
+                    case (dest, weight):
+                        graph.add_edge(source, dest)
+                        graph.edges[source, dest]["weight"] = weight
+
+        self.variables[graph_id] = graph
 
     def _export_graph(self, graph: nx.Graph, file: TextIOWrapper):
         match graph:
             case nx.DiGraph():
-                file.write("ADD DIGRAPH\n")
+                file.write("DIGRAPH\n")
             case nx.Graph():
-                file.write("ADD GRAPH\n")
+                file.write("GRAPH\n")
             case _:
                 raise ValueError(f"Unknown graph type: {type(graph)}")
 
-        for node in graph:
-            file.write(f"ADD NODE \"{node}\"\n")
-
-        for source, dest in graph.edges:
-            file.write(f"ADD EDGE \"{source}\" \"{dest}\"\n")
-            if "weight" in (edge_data := graph.get_edge_data(source, dest)):
-                file.write(
-                    f"SET WEIGHT OF EDGE \"{source}\" \"{dest}\" {edge_data["weight"]}\n"
+        graph_json: defaultdict[str, list[str | tuple[str, int | float]]] = defaultdict(list)
+        for source in graph.nodes:
+            for dest in graph.neighbors(source):
+                graph_json[source].append(
+                    (dest, edge_data["weight"])
+                    if "weight" in (edge_data := graph.get_edge_data(source, dest))
+                    else dest
                 )
+
+        json.dump(graph_json, file)
 
     # ----- PROGRAM -----
 
@@ -394,9 +420,7 @@ class GRLParser(Parser):
                 raise ValueError(f"Entity {graph_id} already exists")
 
             with open(file_path + ".grlg") as file:
-                file_lines = file.readlines()
-
-            self._import_graph(graph_id, file_lines)
+                self._import_graph(graph_id, file)
 
         return ParseTreeNode(evaluator, production.ID, production.string)
 
@@ -487,16 +511,7 @@ class GRLParser(Parser):
 
     @_("GRAPH_TYPE") # type: ignore
     def entity(self, production):
-        def evaluator(graph_type: str):
-            match graph_type:
-                case "GRAPH":
-                    return nx.Graph()
-                case "DIGRAPH":
-                    return nx.DiGraph()
-                case _:
-                    raise ValueError(f"Unknown graph type: {graph_type}")
-
-        return ParseTreeNode(evaluator, production.GRAPH_TYPE)
+        return ParseTreeNode(self._get_new_graph_by_type, production.GRAPH_TYPE)
 
     @_("NODE node") # type: ignore
     def entity(self, production):
