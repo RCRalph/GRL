@@ -15,13 +15,11 @@ ADD NODE "B" my_graph
 ADD EDGE "A" "B" my_graph
 SET WEIGHT OF EDGE "A" "B" 5 my_graph
 
-PRINT NODE COUNT my_graph
-PRINT "\n"
+PRINT "Node count: " + NODE COUNT my_graph
 
-PRINT EDGE COUNT my_graph
-PRINT "\n"
+PRINT "Edge count: " + EDGE COUNT my_graph
 
-FOR node OF NODES my_graph { PRINT node; PRINT "\n"}
+FOR node OF NODES my_graph { PRINT node }
 
 DRAW my_graph
 ```
