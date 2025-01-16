@@ -4,10 +4,10 @@ ADD NODE "B" my_graph
 ADD EDGE "A" "B" my_graph
 SET PRINT OF EDGE "A" "B" 5 my_graph
 
-PRINT EDGE
+PRINT EDGE "A" "B" my_graph
 
 PRINT "Edge count: " + EDGE COUNT my_graph
 
-FOR node OF NODES my_graph { PRINT node }
+FOR node OF NODES my_graph { PRINT (STR node) }
 
 DRAW my_graph

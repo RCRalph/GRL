@@ -8,6 +8,6 @@ PRINT "Node count: " + NODE COUNT my_graph
 
 PRINT "Edge count: " + EDGE COUNT my_graph
 
-FOR node OF NODES my_graph { PRINT node }
+FOR node OF NODES my_graph { PRINT (STR node) }
 
 DRAW my_graph
