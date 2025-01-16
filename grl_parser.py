@@ -384,7 +384,7 @@ class GRLParser(Parser):
 
     @_("PRINT ID") # type: ignore
     def statement(self, production):
-        return ParseTreeNode(print, self._get_variable(production.ID))
+        return ParseTreeNode(print, self._get_graph(production.ID))
 
     @_("PRINT") # type: ignore
     def statement(self, production):
